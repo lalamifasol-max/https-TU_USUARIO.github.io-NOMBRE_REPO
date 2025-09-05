@@ -37,13 +37,10 @@
       <div class="kb" aria-label="Base de conocimiento">
         <h2>Resumen rápido</h2>
         <pre id="kb-summary"></pre>
-
         <h2>Itinerario 7 días (Maldives)</h2>
         <pre id="kb-itinerary"></pre>
-
         <h2>Información faltante</h2>
         <pre id="kb-missing"></pre>
-
         <h2>Comandos útiles</h2>
         <div>
           <span class="tagbtn" data-q="Hola">Hola</span>
@@ -52,10 +49,8 @@
           <span class="tagbtn" data-q="Mostrar todo el itinerario">Mostrar todo el itinerario</span>
         </div>
       </div>
-
       <div class="chatwrap">
         <div class="chat" id="chat" aria-live="polite"></div>
-
         <div class="input">
           <input id="input" type="text" placeholder="Escribe tu pregunta (ej: ¿Qué hay en el Día 2?)" />
           <button id="send">Enviar</button>
@@ -64,7 +59,6 @@
       </div>
     </div>
   </div>
-
   <script>
     // Base de conocimiento: resumen, itinerario y datos faltantes
     const kb = {
@@ -114,130 +108,62 @@
       {q:"¿Hay información de seguridad o emergencias?", a:"No, esa información no está incluida."},
       {q:"¿Cuál es el mejor momento para ir?", a:"El documento no detalla la mejor temporada; no especifica estacionalidad."},
       {q:"¿Incluye comida?", a:"Se mencionan cenas en la playa y gastronomía local, pero no hay un plan de comidas detallado."},
-      {q:"¿Hay Wi‑Fi?", a:"No se confirma; probablemente los resorts lo ofrecen pero no está especificado."},
-      {q:"¿Se puede personalizar el itinerario?", a:"El documento sugiere opciones (por ejemplo, buceo opcional) pero no explica cómo personalizarlo."},
-      {q:"¿Hay políticas de cancelación?", a:"No, no están incluidas en el documento."},
-      {q:"¿Qué idiomas se hablan localmente?", a:"El documento no lo dice; el idioma oficial de Maldivas es el dhivehi (no listado en el documento)."},
-      {q:"¿Se recomiendan seguros de viaje?", a:"El documento no lo especifica, pero se recomienda contratar seguro de viaje."},
-      {q:"¿Se permiten niños?", a:"No se trata específicamente, el enfoque es en lunas de miel (parejas)."},
-      {q:"¿Qué equipo llevar para snorkel?", a:"El documento no da lista; por lo general, traje de baño, protector solar 'reef-safe' y toalla. El equipo suele proveerlo el proveedor."},
-      {q:"¿Cuánto dura la excursión de delfines?", a:"No se especifica la duración."},
-      {q:"¿Es privado el picnic en sandbank?", a:"Se sugiere una experiencia privada, pero el nivel de privacidad no está confirmado."},
-      {q:"¿Hay transporte entre islas?", a:"Se implican traslados en barco para excursiones e inter‑islas, pero no hay horarios ni proveedores."},
-      {q:"¿Qué debo preguntar al resort al reservar?", a:"Pregunta por: traslados incluidos, horarios de actividades, precios, políticas de cancelación, servicios de accesibilidad y número de emergencia."},
-      {q:"¿Cómo obtengo la conversión de PDF a Excel?", a:"Usa la herramienta 'PDF to Excel' en tu panel de Tools (no incluida en este chatbot)."},
-      {q:"¿Cuál es el aeropuerto más cercano?", a:"Aeropuerto Internacional de Malé (MLE)."},
-      {q:"¿Hay restaurantes en la isla local?", a:"Se menciona gastronomía local y restaurantes del resort, pero no nombres ni horarios."},
-      {q:"¿Qué hago si necesito asistencia médica?", a:"El documento no incluye contactos de emergencia; solicita esa información al resort o a la autoridad local antes de viajar."},
-      {q:"¿Qué idiomas soporta este bot?", a:"Este bot está en español, pero se puede adaptar a otros idiomas si lo despliegas con contenidos traducidos."}
+      {q:"¿Hay Wi‑Fi?", a:"No se confirma; probablemente los resorts lo ofrecen."}
+      // Puedes agregar más Q&A aquí.
     ];
 
-    // JSON intents mapping (respuestas cortas)
-    const intents = {
-      greeting: "Hola — soy tu asistente de luna de miel. ¿En qué puedo ayudarte?",
-      hours: "No hay horarios exactos en el documento; las actividades están indicadas por día.",
-      address: "No hay direcciones concretas; sólo se menciona el Aeropuerto Internacional de Malé como punto de llegada.",
-      directions: "Llegar a Malé (MLE). Los traslados locales en barco/lancha están implicados pero no detallados.",
-      tickets: "No se especifican instrucciones de reserva ni compra de tickets en el documento.",
-      prices: "No hay precios ni costos incluidos.",
-      facilities: "Se mencionan resorts/guesthouses, spa, piscina, gastronomía local y actividades del resort; detalles no confirmados.",
-      accessibility: "No hay información de accesibilidad en el documento.",
-      tours: "Tours mencionados: snorkel, avistamiento de delfines, visita a isla local, clase de buceo introductoria y actividades del resort.",
-      events: "Eventos del resort: yoga, clase de cocina, fotografía subacuática, spa y cena de despedida.",
-      rules: "No hay reglas o normativas especificadas en el documento.",
-      contact: "No hay teléfonos, emails ni sitios web en el documento.",
-      openingSeason: "No se especifican temporadas; el documento no detalla la mejor época.",
-      bestTimeToVisit: "No especificado en el documento.",
-      nearestTransport: "Aeropuerto Internacional de Malé (MLE).",
-      emergency: "No hay contactos de emergencia incluidos.",
-      refundPolicy: "No hay política de reembolso/cancelación incluida.",
-      recommendation: "Destinos recomendados: Maldives, Bali, Tanzania+Zanzibar, Costa Rica y Santorini.",
-      fallback: "Lo siento, no entendí. Puedes preguntar sobre el itinerario de Maldivas, actividades o qué información falta en el documento."
-    };
+    // Render knowledge base
+    document.getElementById('kb-summary').textContent = kb.summary;
+    document.getElementById('kb-itinerary').textContent = kb.itinerary.join('\n\n');
+    document.getElementById('kb-missing').textContent = kb.missing.map(i=>'- '+i).join('\n');
 
-    // Poner contenido en la columna KB
-    document.getElementById("kb-summary").textContent = kb.summary;
-    document.getElementById("kb-itinerary").textContent = kb.itinerary.join("\\n");
-    document.getElementById("kb-missing").textContent = kb.missing.join("\\n");
+    // Chat logic
+    const chat = document.getElementById('chat');
+    const input = document.getElementById('input');
+    const send = document.getElementById('send');
 
-    // Chat rendering
-    const chat = document.getElementById("chat");
-    const input = document.getElementById("input");
-    const send = document.getElementById("send");
-
-    function addMessage(text, from='bot') {
-      const wrapper = document.createElement('div');
-      wrapper.className = 'msg ' + (from === 'user' ? 'user' : 'bot');
-      const bubble = document.createElement('div');
-      bubble.className = 'bubble';
-      bubble.textContent = text;
-      wrapper.appendChild(bubble);
-      chat.appendChild(wrapper);
+    function addMsg(text, sender) {
+      const div = document.createElement('div');
+      div.className = 'msg ' + sender;
+      div.innerHTML = `<div class="bubble">${text}</div>`;
+      chat.appendChild(div);
       chat.scrollTop = chat.scrollHeight;
     }
 
-    function findExactAnswer(userText) {
-      const lower = userText.trim().toLowerCase();
-      for (const pair of qas) {
-        if (pair.q.toLowerCase() === lower) return pair.a;
+    function findAnswer(q) {
+      // Busca coincidencia exacta primero
+      let answer = qas.find(qa => qa.q.toLowerCase() === q.toLowerCase());
+      if (answer) return answer.a;
+      // Busca coincidencia parcial
+      answer = qas.find(qa => q.toLowerCase().includes(qa.q.toLowerCase()) || qa.q.toLowerCase().includes(q.toLowerCase()));
+      if (answer) return answer.a;
+      // Preguntas especiales
+      if (q.toLowerCase().includes('itinerario')) return kb.itinerary.join('<br>');
+      if (q.toLowerCase().includes('falta')) return kb.missing.map(i=>'- '+i).join('<br>');
+      // No encontrado
+      return "¡Gracias por tu consulta! Esta pregunta no está en la base de datos, pero puedo ayudarte a buscar información general del itinerario o destinos recomendados.";
+    }
+
+    function handleUserInput() {
+      const value = input.value.trim();
+      if (!value) return;
+      addMsg(value, 'user');
+      setTimeout(() => {
+        addMsg(findAnswer(value), 'bot');
+      }, 400);
+      input.value = '';
+    }
+
+    send.onclick = handleUserInput;
+    input.onkeydown = e => { if(e.key === 'Enter') handleUserInput(); };
+
+    // Botones rápidos
+    document.querySelectorAll('.tagbtn').forEach(btn=>{
+      btn.onclick = () => {
+        input.value = btn.getAttribute('data-q');
+        handleUserInput();
       }
-      return null;
-    }
-
-    function findKeywordAnswer(userText) {
-      const low = userText.toLowerCase();
-      // keywords mapping
-      const kwMap = [
-        {k:['itinerario','7','siete','día','dia'], a: kb.itinerary.join("\\n")},
-        {k:['destinos','recomi','recomend'], a: "Destinos recomendados: Maldives, Bali, Tanzania + Zanzibar, Costa Rica y Santorini."},
-        {k:['malé','mle','aeropuerto'], a: "Aeropuerto Internacional de Malé (MLE) es el punto de llegada para Maldivas."},
-        {k:['snorkel','snórkel','snor'], a: "Sí, hay una excursión de snorkel (Día 2) con posibilidad de ver tortugas y mantas."},
-        {k:['delfin','delfines'], a: "Excursión para ver delfines está en el Día 5, normalmente al amanecer o atardecer; la hora exacta no se especifica."},
-        {k:['spa','masaje'], a: "El itinerario incluye días de spa y tratamientos (Día 2 y Día 6), pero no hay instrucciones de reserva en el documento."},
-        {k:['precio','cost','cuesta','tarifa'], a: intents.prices},
-        {k:['contacto','telefono','teléfono','email','correo','web','website'], a: intents.contact},
-        {k:['reserv','book','reserva','cancel'], a: "El documento no detalla procedimientos de reserva ni políticas de cancelación; consulta directamente con el resort o proveedor."},
-        {k:['accesibilidad','accesible','wheelchair'], a: intents.accessibility},
-        {k:['urgencia','emergencia','salud','vacuna'], a: intents.emergency},
-        {k:['mostrar todo','mostrar itinerario','ver todo','ver itinerario'], a: kb.itinerary.join("\\n")}
-      ];
-      for (const map of kwMap) {
-        for (const kk of map.k) if (low.includes(kk)) return map.a;
-      }
-      return null;
-    }
-
-    function handleInput(raw) {
-      const text = raw.trim();
-      if (!text) return;
-      addMessage(text, 'user');
-      // buscar respuesta exacta
-      let resp = findExactAnswer(text);
-      if (resp) { addMessage(resp); return; }
-      // buscar por keywords
-      resp = findKeywordAnswer(text);
-      if (resp) { addMessage(resp); return; }
-      // check intents map by simple rules
-      if (/hola|buenos|buenas|hey/i.test(text)) { addMessage(intents.greeting); return; }
-      if (/ayuda|help|qué puedo/i.test(text)) { addMessage("Puedo responder sobre: el itinerario de 7 días, actividades (snorkel, spa, yoga), traslados a Malé, y qué información falta en el documento. Prueba: '¿Qué hay en el Día 2?'"); return; }
-      // fallback
-      addMessage(intents.fallback);
-    }
-
-    send.addEventListener('click', () => { handleInput(input.value); input.value=''; input.focus(); });
-    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { handleInput(input.value); input.value=''; } });
-
-    // tag buttons
-    document.querySelectorAll('.tagbtn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const q = btn.getAttribute('data-q');
-        input.value = q;
-        handleInput(q);
-      });
     });
-
-    // saludo inicial
-    addMessage(intents.greeting);
   </script>
 </body>
 </html>
