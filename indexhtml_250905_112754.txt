@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Chatbot - Itinerario Luna de Miel</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body { font-family: Arial, sans-serif; background:#f2f6fb; margin:0; padding:0; display:flex; justify-content:center; align-items:flex-start; min-height:100vh; }
+    .container { width:100%; max-width:900px; margin:24px; background:#fff; border-radius:8px; box-shadow:0 6px 18px rgba(0,0,0,.08); overflow:hidden; }
+    header { background:#0b63d6; color:#fff; padding:18px 20px; }
+    header h1 { margin:0; font-size:18px; }
+    .main { display:flex; gap:20px; padding:20px; }
+    .kb { width:36%; max-height:66vh; overflow:auto; border-right:1px solid #eee; padding-right:12px; }
+    .chatwrap { width:64%; display:flex; flex-direction:column; }
+    .kb h2 { font-size:15px; margin:6px 0; }
+    .kb pre { background:#f7f9fc; padding:10px; border-radius:6px; font-size:13px; white-space:pre-wrap; }
+    .chat { flex:1; background:#eef6ff; padding:12px; border-radius:6px; overflow:auto; min-height:320px; max-height:66vh; }
+    .msg { margin:8px 0; display:flex; gap:8px; }
+    .user { justify-content:flex-end; }
+    .bubble { padding:10px 12px; border-radius:12px; max-width:78%; font-size:14px; line-height:1.3; }
+    .bot .bubble { background:#fff; color:#111; border:1px solid #e3eefc; }
+    .user .bubble { background:#0b63d6; color:#fff; }
+    .input { display:flex; gap:8px; margin-top:12px; }
+    input[type="text"] { flex:1; padding:10px 12px; border-radius:8px; border:1px solid #d1e6ff; font-size:14px; }
+    button { padding:10px 14px; border-radius:8px; border:0; background:#0b63d6; color:#fff; font-weight:600; cursor:pointer; }
+    .small { font-size:13px; color:#666; margin-top:8px; }
+    .tagbtn { display:inline-block; margin:6px 6px 0 0; padding:6px 8px; background:#eef6ff; border-radius:6px; cursor:pointer; font-size:13px; color:#0b63d6; }
+  </style>
+</head>
+<body>
+  <div class="container" role="main">
+    <header>
+      <h1>Asistente de Luna de Miel — Itinerario Maldives & Destinos recomendados</h1>
+    </header>
+    <div class="main">
+      <div class="kb" aria-label="Base de conocimiento">
+        <h2>Resumen rápido</h2>
+        <pre id="kb-summary"></pre>
+        <h2>Itinerario 7 días (Maldives)</h2>
+        <pre id="kb-itinerary"></pre>
+        <h2>Información faltante</h2>
+        <pre id="kb-missing"></pre>
+        <h2>Comandos útiles</h2>
+        <div>
+          <span class="tagbtn" data-q="Hola">Hola</span>
+          <span class="tagbtn" data-q="¿Qué incluye el Día 3?">¿Qué incluye el Día 3?</span>
+          <span class="tagbtn" data-q="¿Cómo llego a Malé?">¿Cómo llego a Malé?</span>
+          <span class="tagbtn" data-q="Mostrar todo el itinerario">Mostrar todo el itinerario</span>
+        </div>
+      </div>
+      <div class="chatwrap">
+        <div class="chat" id="chat" aria-live="polite"></div>
+        <div class="input">
+          <input id="input" type="text" placeholder="Escribe tu pregunta (ej: ¿Qué hay en el Día 2?)" />
+          <button id="send">Enviar</button>
+        </div>
+        <div class="small">Sugerencia: prueba preguntas como "¿Qué destinos recomiendan?" o "¿Hay buceo disponible?"</div>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Base de conocimiento: resumen, itinerario y datos faltantes
+    const kb = {
+      summary: "Documento: propuesta 'Innovación para el sector turismo' — foco en lunas de miel 2025. Recomendaciones: Maldives, Bali, Tanzania+Zanzibar, Costa Rica, Santorini. Incluye un itinerario de 7 días en Maldivas (actividades: snorkel, isla local, deportes acuáticos, spa, picnic en sandbank, avistamiento de delfines). Falta información operativa: contactos, precios, horarios y políticas.",
+      itinerary: [
+        "Día 1 — Llegada a Malé: Llegada al Aeropuerto Internacional de Malé (MLE); traslado al alojamiento; tiempo libre y puesta de sol.",
+        "Día 2 — Snorkel y relax: Excursión de snorkel (posible avistamiento de tortugas y mantas); tarde libre para piscina o spa.",
+        "Día 3 — Isla local y cultura: Visita a isla local; degustación de mas huni; compras de artesanías.",
+        "Día 4 — Deportes acuáticos: Kayak, paddleboard o windsurf; opcional clase introductoria de buceo; cena en la playa.",
+        "Día 5 — Delfines y picnic: Excursión para ver delfines (amanecer o atardecer) y picnic en un sandbank.",
+        "Día 6 — Spa y actividades del resort: Día de spa, yoga, clases de cocina, fotografía subacuática; cena de despedida.",
+        "Día 7 — Regreso: Mañana libre, check-out y traslado al Aeropuerto de Malé para el vuelo de regreso."
+      ],
+      missing: [
+        "Nombres y direcciones de alojamientos y proveedores",
+        "Teléfonos, emails y webs de contacto",
+        "Precios (alojamiento, excursiones, transportes, comidas)",
+        "Horarios de actividades y duración exacta",
+        "Políticas de reserva/cancelación y seguros",
+        "Información de accesibilidad y emergencias",
+        "Requisitos de visado y salud"
+      ]
+    };
+
+    // Preguntas y respuestas (extracto de las 45+ Q&A preparadas)
+    const qas = [
+      {q:"¿Qué es este documento?", a:"Es una propuesta de viaje para lunas de miel con recomendaciones de destinos y un itinerario de 7 días en Maldivas."},
+      {q:"¿Qué destinos recomiendan para lunas de miel?", a:"Maldives, Bali, Tanzania + Zanzibar, Costa Rica y Santorini están recomendados."},
+      {q:"¿Cuánto dura el itinerario en Maldivas?", a:"Siete días."},
+      {q:"¿Dónde llego para el viaje a Maldivas?", a:"Al Aeropuerto Internacional de Malé (MLE)."},
+      {q:"¿Incluye traslado desde el aeropuerto?", a:"El itinerario implica traslados desde Malé al alojamiento, pero no se indica si están incluidos ni el precio."},
+      {q:"¿Qué hago en el Día 1?", a:"Llegada, traslado al resort/guesthouse y tiempo libre para la playa y la puesta de sol."},
+      {q:"¿Qué incluye el Día 2?", a:"Excursión de snorkel y tarde libre para piscina o spa."},
+      {q:"¿Qué pasa en el Día 3?", a:"Visita a una isla local, degustación de comida local y compras de artesanías."},
+      {q:"¿Qué actividades hay el Día 4?", a:"Deportes acuáticos (kayak, paddleboard, windsurf) y una opción de clase introductoria de buceo; cena en la playa."},
+      {q:"¿Cuándo es la excursión de delfines?", a:"Día 5, en horario de amanecer o atardecer — la hora exacta no está especificada."},
+      {q:"¿Qué es un picnic en sandbank?", a:"Es un picnic privado en una pequeña barra de arena (sandbank) para disfrutar vistas y privacidad."},
+      {q:"¿Qué incluye el Día 6?", a:"Spa, actividades del resort como yoga y clase de cocina, fotografía subacuática y cena de despedida."},
+      {q:"¿Qué incluye el Día 7?", a:"Mañana libre, check-out y traslado al aeropuerto."},
+      {q:"¿Puedo bucear?", a:"Sí, se menciona una clase introductoria de buceo como opción."},
+      {q:"¿Hay snorkel?", a:"Sí, hay una excursión de snorkel programada en el itinerario."},
+      {q:"¿Hay spa disponible?", a:"Sí, se mencionan tratamientos de spa en el itinerario."},
+      {q:"¿Dónde compro souvenirs?", a:"En la visita a la isla local se mencionan artesanías y compras."},
+      {q:"¿Están los precios en el documento?", a:"No, no hay precios ni tarifas incluidas."},
+      {q:"¿Cómo reservo actividades?", a:"El documento no especifica el proceso de reserva; lo normal sería gestionarlo con el resort o proveedor local."},
+      {q:"¿Hay teléfonos o contactos?", a:"No, no hay teléfonos, emails ni sitios web en el documento."},
+      {q:"¿Hay información de seguridad o emergencias?", a:"No, esa información no está incluida."},
+      {q:"¿Cuál es el mejor momento para ir?", a:"El documento no detalla la mejor temporada; no especifica estacionalidad."},
+      {q:"¿Incluye comida?", a:"Se mencionan cenas en la playa y gastronomía local, pero no hay un plan de comidas detallado."},
+      {q:"¿Hay Wi‑Fi?", a:"No se confirma; probablemente los resorts lo ofrecen."}
+      // Puedes agregar más Q&A aquí.
+    ];
+
+    // Render knowledge base
+    document.getElementById('kb-summary').textContent = kb.summary;
+    document.getElementById('kb-itinerary').textContent = kb.itinerary.join('\n\n');
+    document.getElementById('kb-missing').textContent = kb.missing.map(i=>'- '+i).join('\n');
+
+    // Chat logic
+    const chat = document.getElementById('chat');
+    const input = document.getElementById('input');
+    const send = document.getElementById('send');
+
+    function addMsg(text, sender) {
+      const div = document.createElement('div');
+      div.className = 'msg ' + sender;
+      div.innerHTML = `<div class="bubble">${text}</div>`;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function findAnswer(q) {
+      // Busca coincidencia exacta primero
+      let answer = qas.find(qa => qa.q.toLowerCase() === q.toLowerCase());
+      if (answer) return answer.a;
+      // Busca coincidencia parcial
+      answer = qas.find(qa => q.toLowerCase().includes(qa.q.toLowerCase()) || qa.q.toLowerCase().includes(q.toLowerCase()));
+      if (answer) return answer.a;
+      // Preguntas especiales
+      if (q.toLowerCase().includes('itinerario')) return kb.itinerary.join('<br>');
+      if (q.toLowerCase().includes('falta')) return kb.missing.map(i=>'- '+i).join('<br>');
+      // No encontrado
+      return "¡Gracias por tu consulta! Esta pregunta no está en la base de datos, pero puedo ayudarte a buscar información general del itinerario o destinos recomendados.";
+    }
+
+    function handleUserInput() {
+      const value = input.value.trim();
+      if (!value) return;
+      addMsg(value, 'user');
+      setTimeout(() => {
+        addMsg(findAnswer(value), 'bot');
+      }, 400);
+      input.value = '';
+    }
+
+    send.onclick = handleUserInput;
+    input.onkeydown = e => { if(e.key === 'Enter') handleUserInput(); };
+
+    // Botones rápidos
+    document.querySelectorAll('.tagbtn').forEach(btn=>{
+      btn.onclick = () => {
+        input.value = btn.getAttribute('data-q');
+        handleUserInput();
+      }
+    });
+  </script>
+</body>
+</html>
